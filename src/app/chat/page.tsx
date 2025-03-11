@@ -2,14 +2,43 @@
 import { useState, useEffect } from "react";
 import { database, ref, push, onValue, auth, onAuthStateChanged, signOut } from "../../../firebaseConfig";
 import { useRouter } from "next/navigation";
+import { User } from "firebase/auth";
 
 export default function ChatPage() {
-  const [messages, setMessages] = useState<any[]>([]);
+  const [messages, setMessages] = useState<{ text: string; user: string; userId: string; timestamp: number }[]>([]);
+  const [user, setUser] = useState<User | null>(null);
+  // const [messages, setMessages] = useState<any[]>([]);
+  // const [user, setUser] = useState<any>(null);
   const [newMessage, setNewMessage] = useState("");
-  const [user, setUser] = useState<any>(null);
   const router = useRouter();
   const chatRef = ref(database, "chat_messages");
 
+  // useEffect(() => {
+  //   onValue(chatRef, (snapshot) => {
+  //     if (snapshot.exists()) {
+  //       setMessages(Object.values(snapshot.val()));
+  //     } else {
+  //       setMessages([]);
+  //     }
+  //   });
+
+  //   const unsubscribe = onAuthStateChanged(auth, (user) => {
+  //     if (!user) router.push("/login"); // Redirect if not logged in
+  //     else setUser(user);
+  //   });
+
+  //   return () => unsubscribe();
+  // }, []);
+
+  useEffect(() => {
+    const unsubscribe = onAuthStateChanged(auth, (user) => {
+      if (!user) router.push("/login");
+      else setUser(user);
+    });
+  
+    return () => unsubscribe();
+  }, [router]);
+  
   useEffect(() => {
     onValue(chatRef, (snapshot) => {
       if (snapshot.exists()) {
@@ -18,14 +47,7 @@ export default function ChatPage() {
         setMessages([]);
       }
     });
-
-    const unsubscribe = onAuthStateChanged(auth, (user) => {
-      if (!user) router.push("/login"); // Redirect if not logged in
-      else setUser(user);
-    });
-
-    return () => unsubscribe();
-  }, []);
+  }, [chatRef]);
 
   const sendMessage = async () => {
     if (!newMessage.trim() || !user) return;
