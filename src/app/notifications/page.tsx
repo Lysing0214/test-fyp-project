@@ -37,17 +37,25 @@ export default function Notifications() {
     registerServiceWorker();
 
     // Handle foreground messages
-    onMessage(messaging, (payload) => {
-      console.log("Message received:", payload);
-      if (payload.notification) {
-        new Notification(payload.notification.title || "No Title", {
-          body: payload.notification.body || "No Body",
-          icon: "/vercel.svg",
-        });
-      } else {
-        console.warn("Received message without a notification payload:", payload);
+    onMessage(messaging, async (payload) => {
+      console.log("Foreground message received:", payload);
+
+      try {
+        if (payload.notification) {
+          await new Notification(payload.notification.title || "No Title", {
+            body: payload.notification.body || "No Body",
+            icon: "/vercel.svg",
+          });
+          console.log("Notification displayed successfully!");
+        } else {
+          console.warn("Received message without a notification payload:", payload);
+        }
+      } catch (error) {
+        console.error("Error displaying notification:", error);
       }
     });
+
+    console.log("Is Standalone Mode:", window.matchMedia("(display-mode: standalone)").matches);
   }, []);
 
   return (

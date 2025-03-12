@@ -16,11 +16,31 @@ firebase.initializeApp(firebaseConfig);
 const messaging = firebase.messaging();
 
 // Handle background messages
+// messaging.onBackgroundMessage((payload) => {
+//   console.log("Received background message:", payload);
+
+//   self.registration.showNotification(payload.notification?.title || "No Title", {
+//     body: payload.notification?.body || "No Body",
+//     icon: "/vercel.svg",
+//   });
+// });
+
+
 messaging.onBackgroundMessage((payload) => {
   console.log("Received background message:", payload);
 
-  self.registration.showNotification(payload.notification?.title || "No Title", {
-    body: payload.notification?.body || "No Body",
-    icon: "/vercel.svg",
-  });
+  if (payload.notification) {
+    const { title, body } = payload.notification;
+    const options = {
+      body,
+      icon: "/vercel.svg",
+    };
+
+    self.registration
+      .showNotification(title, options)
+      .then(() => console.log("Notification displayed successfully"))
+      .catch((error) => console.error("Error displaying notification:", error));
+  } else {
+    console.warn("Received message without a notification payload:", payload);
+  }
 });
