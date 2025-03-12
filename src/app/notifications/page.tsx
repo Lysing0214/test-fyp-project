@@ -38,21 +38,27 @@ export default function Notifications() {
 
     // Handle foreground messages
     onMessage(messaging, async (payload) => {
-      console.log("Foreground message received:", payload);
+      console.log("Message received:", payload);
 
-      try {
-        if (payload.notification) {
-          await new Notification(payload.notification.title || "No Title", {
-            body: payload.notification.body || "No Body",
-            icon: "/vercel.svg",
-          });
-          console.log("Notification displayed successfully!");
-        } else {
-          console.warn("Received message without a notification payload:", payload);
+      if (payload.notification) {
+        try {
+          const registration = await navigator.serviceWorker.getRegistration();
+          if (registration) {
+            registration.showNotification(payload.notification.title || "No Title", {
+              body: payload.notification.body || "No Body",
+              icon: "/vercel.svg",
+            });
+          } else {
+            console.warn("No service worker registration found.");
+          }
+        } catch (error) {
+          console.error("Error displaying notification:", error);
         }
-      } catch (error) {
-        console.error("Error displaying notification:", error);
+      } else {
+        console.warn("Received message without a notification payload:", payload);
       }
+
+
     });
 
     console.log("Is Standalone Mode:", window.matchMedia("(display-mode: standalone)").matches);
