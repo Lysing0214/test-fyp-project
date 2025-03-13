@@ -37,14 +37,36 @@ export default function Notifications() {
     registerServiceWorker();
 
     // Handle foreground messages
+    // onMessage(messaging, async (payload) => {
+    //   console.log("Message received:", payload);
+
+    //   if (payload.notification) {
+    //     try {
+    //       const registration = await navigator.serviceWorker.getRegistration();
+    //       if (registration) {
+    //         registration.showNotification(payload.notification.title || "No Title", {
+    //           body: payload.notification.body || "No Body",
+    //           icon: "/vercel.svg",
+    //         });
+    //       } else {
+    //         console.warn("No service worker registration found.");
+    //       }
+    //     } catch (error) {
+    //       console.error("Error displaying notification:", error);
+    //     }
+    //   } else {
+    //     console.warn("Received message without a notification payload:", payload);
+    //   }
+    // });
+
     onMessage(messaging, async (payload) => {
       console.log("Message received:", payload);
-
-      if (payload.notification) {
+    
+      if (payload.notification?.title) {
         try {
           const registration = await navigator.serviceWorker.getRegistration();
           if (registration) {
-            registration.showNotification(payload.notification.title || "No Title", {
+            registration.showNotification(payload.notification.title, {
               body: payload.notification.body || "No Body",
               icon: "/vercel.svg",
             });
@@ -55,10 +77,8 @@ export default function Notifications() {
           console.error("Error displaying notification:", error);
         }
       } else {
-        console.warn("Received message without a notification payload:", payload);
+        console.warn("Received message without a notification title:", payload);
       }
-
-
     });
 
     console.log("Is Standalone Mode:", window.matchMedia("(display-mode: standalone)").matches);
